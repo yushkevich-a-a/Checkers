@@ -53,8 +53,10 @@ private:
         for (int i = 0; i < 8; ++i) {
             for (int j = 0; j < 8; ++j) {
                 w += (mtx[i][j] == 1);
+                // w += 0.1 * (mtx[i][j] == 1) * (7 - i);
                 wq += (mtx[i][j] == 3);
                 b += (mtx[i][j] == 2);
+                // b += 0.1 * (mtx[i][j] == 2) * (i);
                 bq += (mtx[i][j] == 4);
             }
         }
@@ -64,6 +66,7 @@ private:
         }
         if (w + wq == 0) return INF;
         if (b + bq == 0) return 0;
+        // return (b + bq * 7) / (w + wq * 7);
         return (b + bq * 4) / (w + wq * 4);
     }
     
@@ -73,10 +76,10 @@ private:
         for (int i = 0; i < 8; ++i) {
             for (int j = 0; j < 8; ++j) {
                 w += (mtx[i][j] == 1);
-                // w += 0.1 * (mtx[i][j] == 1) * (7 - i);
+                 w += 0.1 * (mtx[i][j] == 1) * (7 - i);
                 wq += (mtx[i][j] == 3);
                 b += (mtx[i][j] == 2);
-                // b += 0.1 * (mtx[i][j] == 2) * (i);
+                 b += 0.1 * (mtx[i][j] == 2) * (i);
                 bq += (mtx[i][j] == 4);
             }
         }
@@ -115,13 +118,18 @@ private:
             }
             if (score > best_score) {
                 best_score = score;
-                next_best_state[state] = (have_beats_now ? next_state : -1);
-                next_move[state] = turn;
+                best_states.clear();
+                best_moves.clear();
             }
             if (score == best_score) {
-                score = best_score;
+                best_states.push_back(have_beats_now ? next_state : -1);
+                best_moves.push_back(turn);
             }
         }
+        srand(time(0));
+        size_t idx = rand() % best_moves.size();
+        next_best_state[state] = best_states[idx];
+        next_move[state] = best_moves[idx];
         return best_score;
     }
     
