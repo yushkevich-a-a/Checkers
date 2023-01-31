@@ -88,13 +88,13 @@ private:
     
     bool player_turn(const bool color) {
         // return 1 if quit
-        vector<pair<int, int>> cells;
+        vector<pair<POS_T, POS_T>> cells;
         for (auto turn: logic.turns) {
             cells.emplace_back(turn.x, turn.y);
         }
         board.highlight_cells(cells);
         move_pos pos = {-1, -1, -1, -1};
-        int x = -1, y = -1;
+        POS_T x = -1, y = -1;
         while (true) {
             auto cell = hand.get_cell();
             if (cell.first == -1) return 1;
@@ -125,7 +125,7 @@ private:
             y = cell.second;
             board.clear_highlight();
             board.set_active(x, y);
-            vector<pair<int, int>> cells2;
+            vector<pair<POS_T, POS_T>> cells2;
             for (auto turn: logic.turns) {
                 if (turn.x == x && turn.y == y) {
                     cells2.emplace_back(turn.x2, turn.y2);
@@ -142,7 +142,7 @@ private:
             logic.find_turns(pos.x2, pos.y2);
             if (!logic.have_beats) break;
             
-            vector<pair<int, int>> cells;
+            vector<pair<POS_T, POS_T>> cells;
             for (auto turn: logic.turns) {
                 cells.emplace_back(turn.x2, turn.y2);
             }

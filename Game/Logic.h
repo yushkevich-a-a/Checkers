@@ -14,7 +14,7 @@ public:
         find_turns(color, board->get_board());
     }
     
-    void find_turns(const int x, const int y) {
+    void find_turns(const POS_T x, const POS_T y) {
         find_turns(x, y, board->get_board());
     }
     
@@ -34,7 +34,7 @@ public:
     }
     
 private:
-    vector<vector<int>> make_turn(vector<vector<int>> mtx, move_pos turn) const {
+    vector<vector<POS_T>> make_turn(vector<vector<POS_T>> mtx, move_pos turn) const {
         if (turn.xb != -1) mtx[turn.xb][turn.yb] = 0;
         if ((mtx[turn.x][turn.y] == 1 && turn.x2 == 0) || (mtx[turn.x][turn.y] == 2 && turn.x2 == 7)) mtx[turn.x][turn.y] += 2;
         mtx[turn.x2][turn.y2] = mtx[turn.x][turn.y];
@@ -42,39 +42,16 @@ private:
         return mtx;
     }
     
-    double calc_score(const vector<vector<int>>& mtx, const bool color) const {
+    double calc_score(const vector<vector<POS_T>>& mtx, const bool color) const {
         if (color) return calc_score_black(mtx, color);
         else return calc_score_white(mtx, color);
     }
     
-    double calc_score_white(const vector<vector<int>>& mtx, const bool color) const {
+    double calc_score_white(const vector<vector<POS_T>>& mtx, const bool color) const {
         // color - who is max player
         double w = 0, wq = 0, b = 0, bq = 0;
-        for (int i = 0; i < 8; ++i) {
-            for (int j = 0; j < 8; ++j) {
-                w += (mtx[i][j] == 1);
-                // w += 0.1 * (mtx[i][j] == 1) * (7 - i);
-                wq += (mtx[i][j] == 3);
-                b += (mtx[i][j] == 2);
-                // b += 0.1 * (mtx[i][j] == 2) * (i);
-                bq += (mtx[i][j] == 4);
-            }
-        }
-        if (!color) {
-            swap(b, w);
-            swap(bq, wq);
-        }
-        if (w + wq == 0) return INF;
-        if (b + bq == 0) return 0;
-        // return (b + bq * 7) / (w + wq * 7);
-        return (b + bq * 4) / (w + wq * 4);
-    }
-    
-    double calc_score_black(const vector<vector<int>>& mtx, const bool color) const {
-        // color - who is max player
-        double w = 0, wq = 0, b = 0, bq = 0;
-        for (int i = 0; i < 8; ++i) {
-            for (int j = 0; j < 8; ++j) {
+        for (POS_T i = 0; i < 8; ++i) {
+            for (POS_T j = 0; j < 8; ++j) {
                 w += (mtx[i][j] == 1);
                  w += 0.1 * (mtx[i][j] == 1) * (7 - i);
                 wq += (mtx[i][j] == 3);
@@ -89,11 +66,34 @@ private:
         }
         if (w + wq == 0) return INF;
         if (b + bq == 0) return 0;
-        // return (b + bq * 7) / (w + wq * 7);
+         return (b + bq * 7) / (w + wq * 7);
+        return (b + bq * 4) / (w + wq * 4);
+    }
+    
+    double calc_score_black(const vector<vector<POS_T>>& mtx, const bool color) const {
+        // color - who is max player
+        double w = 0, wq = 0, b = 0, bq = 0;
+        for (POS_T i = 0; i < 8; ++i) {
+            for (POS_T j = 0; j < 8; ++j) {
+                w += (mtx[i][j] == 1);
+                 w += 0.1 * (mtx[i][j] == 1) * (7 - i);
+                wq += (mtx[i][j] == 3);
+                b += (mtx[i][j] == 2);
+                 b += 0.1 * (mtx[i][j] == 2) * (i);
+                bq += (mtx[i][j] == 4);
+            }
+        }
+        if (!color) {
+            swap(b, w);
+            swap(bq, wq);
+        }
+        if (w + wq == 0) return INF;
+        if (b + bq == 0) return 0;
+         return (b + bq * 7) / (w + wq * 7);
         return (b + bq * 4) / (w + wq * 4);
     }
 
-    double find_first_best_turn(vector<vector<int>> mtx, const bool color, const int x, const int y, size_t state, double alpha = -1) {
+    double find_first_best_turn(vector<vector<POS_T>> mtx, const bool color, const POS_T x, const POS_T y, size_t state, double alpha = -1) {
         next_best_state.push_back(-1);
         next_move.emplace_back(-1, -1, -1, -1);
         double best_score = -1;
@@ -126,20 +126,20 @@ private:
                 best_moves.push_back(turn);
             }
         }
-        srand(time(0));
+        // srand(time(0));
         size_t idx = rand() % best_moves.size();
         next_best_state[state] = best_states[idx];
         next_move[state] = best_moves[idx];
         return best_score;
     }
     
-    double find_best_turns_rec(vector<vector<int>> mtx,
+    double find_best_turns_rec(vector<vector<POS_T>> mtx,
                            const bool color,
                            const size_t depth,
                            double alpha = -1,
                            double beta = INF + 1,
-                           const int x = -1,
-                           const int y = -1) {
+                           const POS_T x = -1,
+                           const POS_T y = -1) {
         if (depth == Max_depth) {
             return calc_score(mtx, (depth % 2 == color));
         }
@@ -174,11 +174,11 @@ private:
         return (depth % 2 ? max_score : min_score);
     }
     
-    void find_turns(const bool color, const vector<vector<int>>& mtx) {
+    void find_turns(const bool color, const vector<vector<POS_T>>& mtx) {
         vector<move_pos> res_turns;
         bool have_beats_before = false;
-        for (int i = 0; i < 8; ++i) {
-            for (int j = 0; j < 8; ++j) {
+        for (POS_T i = 0; i < 8; ++i) {
+            for (POS_T j = 0; j < 8; ++j) {
                 if (mtx[i][j] && mtx[i][j] % 2 != color) {
                     find_turns(i, j, mtx);
                     if (have_beats && !have_beats_before) {
@@ -195,20 +195,20 @@ private:
         have_beats = have_beats_before;
     }
     
-    void find_turns(const int x, const int y, const vector<vector<int>>& mtx) {
+    void find_turns(const POS_T x, const POS_T y, const vector<vector<POS_T>>& mtx) {
         turns.clear();
         have_beats = false;
-        int type = mtx[x][y];
+        POS_T type = mtx[x][y];
         // check beats
         switch (type) {
             case 1:
             case 2:
                 // check pieces
-                for (int i = x - 2; i <= x + 2; i += 4) {
-                    for (int j = y - 2; j <= y + 2; j += 4) {
+                for (POS_T i = x - 2; i <= x + 2; i += 4) {
+                    for (POS_T j = y - 2; j <= y + 2; j += 4) {
                         if ( i < 0 || i > 7 || j < 0 || j > 7)
                             continue;
-                        int xb = (x + i) / 2, yb = (y + j) / 2;
+                        POS_T xb = (x + i) / 2, yb = (y + j) / 2;
                         if ( mtx[i][j] ||
                             !mtx[xb][yb] ||
                             mtx[xb][yb] % 2 == type % 2)
@@ -219,10 +219,10 @@ private:
                 break;
             default:
                 // check queens
-                for (int i = -1; i <= 1; i += 2) {
-                    for (int j = -1; j <= 1; j += 2) {
-                        int xb = -1, yb = -1;
-                        for (int i2 = x + i, j2 = y + j;
+                for (POS_T i = -1; i <= 1; i += 2) {
+                    for (POS_T j = -1; j <= 1; j += 2) {
+                        POS_T xb = -1, yb = -1;
+                        for (POS_T i2 = x + i, j2 = y + j;
                              i2 != 8 && j2 != 8 && i2 != -1 && j2 != -1;
                              i2 += i, j2 += j) {
                             if (mtx[i2][j2]) {
@@ -251,8 +251,8 @@ private:
             case 2:
                 // check pieces
                 {
-                    int i = ((type % 2) ? x - 1 : x + 1);
-                    for (int j = y - 1; j <= y + 1; j += 2) {
+                    POS_T i = ((type % 2) ? x - 1 : x + 1);
+                    for (POS_T j = y - 1; j <= y + 1; j += 2) {
                         if ( i < 0 || i > 7 || j < 0 || j > 7 || mtx[i][j])
                             continue;
                         turns.emplace_back(x, y, i, j);
@@ -261,9 +261,9 @@ private:
                 }
             default:
                 // check queens
-                for (int i = -1; i <= 1; i += 2) {
-                    for (int j = -1; j <= 1; j += 2) {
-                        for (int i2 = x + i, j2 = y + j;
+                for (POS_T i = -1; i <= 1; i += 2) {
+                    for (POS_T j = -1; j <= 1; j += 2) {
+                        for (POS_T i2 = x + i, j2 = y + j;
                              i2 != 8 && j2 != 8 && i2 != -1 && j2 != -1;
                              i2 += i, j2 += j) {
                             if (mtx[i2][j2]) break;

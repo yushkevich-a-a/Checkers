@@ -76,10 +76,7 @@ public:
         move_piece(turn.x, turn.y, turn.x2, turn.y2);
     }
 
-    void move_piece(const char x, const int y, const char x2, const int y2) {
-        move_piece(8 - y, x - 'a', 8 - y2, x2 - 'a');
-    }
-    void move_piece(const int i, const int j, const int i2, const int j2) {
+    void move_piece(const POS_T i, const POS_T j, const POS_T i2, const POS_T j2) {
         if (mtx[i2][j2]) {
             throw runtime_error("final position is not empty, can't move");
         }
@@ -92,15 +89,11 @@ public:
         drop_piece(i, j);
     }
     
-    void drop_piece(const char x, const int y) {
-        drop_piece(8 - y, x - 'a');
-    }
-    
-    void drop_piece(const int i, const int j) {
+    void drop_piece(const POS_T i, const POS_T j) {
         mtx[i][j] = 0;
         rerender();
     }
-    void turn_into_queen(const int i, const int j) {
+    void turn_into_queen(const POS_T i, const POS_T j) {
         if (mtx[i][j] == 0 || mtx[i][j] > 2 ||
             (mtx[i][j] == 1 && i != 0) ||
             (mtx[i][j] == 2 && i != 7)) {
@@ -109,26 +102,26 @@ public:
         mtx[i][j] += 2;
         rerender();
     }
-    vector<vector<int>> get_board() const {
+    vector<vector<POS_T>> get_board() const {
         return mtx;
     }
     
-    void highlight_cells(vector<pair<int, int>> cells) {
+    void highlight_cells(vector<pair<POS_T, POS_T>> cells) {
         for (auto pos: cells) {
-            int x = pos.first, y = pos.second;
+            POS_T x = pos.first, y = pos.second;
             is_highlighted_[x][y] = 1;
         }
         rerender();
     }
     
     void clear_highlight() {
-        for (int i = 0; i < 8; ++i) {
+        for (POS_T i = 0; i < 8; ++i) {
             is_highlighted_[i].assign(8, 0);
         }
         rerender();
     }
     
-    void set_active(const int x, const int y) {
+    void set_active(const POS_T x, const POS_T y) {
         active_x = x;
         active_y = y;
         rerender();
@@ -140,7 +133,7 @@ public:
         rerender();
     }
     
-    bool is_highlighted(const int x, const int y) {
+    bool is_highlighted(const POS_T x, const POS_T y) {
         return is_highlighted_[x][y];
     }
     
@@ -171,8 +164,8 @@ public:
 
 private:
     void make_start_mtx() {
-        for (int i = 0; i < 8; ++i) {
-            for (int j = 0; j < 8; ++j) {
+        for (POS_T i = 0; i < 8; ++i) {
+            for (POS_T j = 0; j < 8; ++j) {
                 if (i < 3 && (i + j) % 2 == 1) mtx[i][j] = 2;
                 if (i > 4 && (i + j) % 2 == 1) mtx[i][j] = 1;
             }
@@ -185,8 +178,8 @@ private:
         SDL_RenderCopy(ren, board, NULL, NULL);
         
         // draw pieces
-        for (int i = 0; i < 8; ++i) {
-            for (int j = 0; j < 8; ++j) {
+        for (POS_T i = 0; i < 8; ++i) {
+            for (POS_T j = 0; j < 8; ++j) {
                 if (!mtx[i][j]) continue;
                 int wpos = W * (j + 1) / 10 + W / 120;
                 int hpos = H * (i + 1) / 10 + H / 120;
@@ -206,8 +199,8 @@ private:
         SDL_SetRenderDrawColor( ren, 0, 255, 0, 0 );
         const double scale = 2.5;
         SDL_RenderSetScale( ren, scale, scale );
-        for (int i = 0; i < 8; ++i) {
-            for (int j = 0; j < 8; ++j) {
+        for (POS_T i = 0; i < 8; ++i) {
+            for (POS_T j = 0; j < 8; ++j) {
                 if (!is_highlighted_[i][j]) continue;
                 SDL_Rect cell{int(W * (j + 1) / 10 / scale), int(H * (i + 1) / 10 / scale), int(W / 10 / scale), int(H / 10 / scale)};
                 SDL_RenderDrawRect(ren, &cell);
@@ -267,7 +260,7 @@ private:
     int active_x = -1, active_y = -1;
     int game_results = -1;
     vector<vector<bool>> is_highlighted_ = vector<vector<bool>>(8, vector<bool>(8, 0));
-    vector<vector<int>> mtx = vector<vector<int>>(8, vector<int>(8, 0));
+    vector<vector<POS_T>> mtx = vector<vector<POS_T>>(8, vector<POS_T>(8, 0));
     // 1 - white, 2 - black, 3 - white queen, 4 - black queen
 };
 

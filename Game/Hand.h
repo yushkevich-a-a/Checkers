@@ -8,7 +8,7 @@ class Hand {
 public:
     Hand(Board* board): board(board) {}
 
-    pair<int, int> get_cell() const {
+    pair<POS_T, POS_T> get_cell() const {
         SDL_Event windowEvent;
         bool quit = false;
         int x = -1, y = -1;
