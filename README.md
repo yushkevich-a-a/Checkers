@@ -1,4 +1,4 @@
-# checkers
+# Checkers
 Desktop application for playing checkers with a bot / friend in C++.  
 Using the SDL2 framework for rendering.  
 Supports the game bot vs bot with the setting of the depth of calculation for each separately (from main.cpp as args for Game::play).  
