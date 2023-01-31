@@ -109,7 +109,7 @@ public:
         mtx[i][j] += 2;
         rerender();
     }
-    vector<vector<int>> get_board() {
+    vector<vector<int>> get_board() const {
         return mtx;
     }
     

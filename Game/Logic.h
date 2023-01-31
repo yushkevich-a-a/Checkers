@@ -34,7 +34,7 @@ public:
     }
     
 private:
-    vector<vector<int>> make_turn(vector<vector<int>> mtx, move_pos turn) {
+    vector<vector<int>> make_turn(vector<vector<int>> mtx, move_pos turn) const {
         if (turn.xb != -1) mtx[turn.xb][turn.yb] = 0;
         if ((mtx[turn.x][turn.y] == 1 && turn.x2 == 0) || (mtx[turn.x][turn.y] == 2 && turn.x2 == 7)) mtx[turn.x][turn.y] += 2;
         mtx[turn.x2][turn.y2] = mtx[turn.x][turn.y];
@@ -42,12 +42,12 @@ private:
         return mtx;
     }
     
-    double calc_score(const vector<vector<int>>& mtx, const bool color) {
+    double calc_score(const vector<vector<int>>& mtx, const bool color) const {
         if (color) return calc_score_black(mtx, color);
         else return calc_score_white(mtx, color);
     }
     
-    double calc_score_white(const vector<vector<int>>& mtx, const bool color) {
+    double calc_score_white(const vector<vector<int>>& mtx, const bool color) const {
         // color - who is max player
         double w = 0, wq = 0, b = 0, bq = 0;
         for (int i = 0; i < 8; ++i) {
@@ -67,7 +67,7 @@ private:
         return (b + bq * 4) / (w + wq * 4);
     }
     
-    double calc_score_black(const vector<vector<int>>& mtx, const bool color) {
+    double calc_score_black(const vector<vector<int>>& mtx, const bool color) const {
         // color - who is max player
         double w = 0, wq = 0, b = 0, bq = 0;
         for (int i = 0; i < 8; ++i) {

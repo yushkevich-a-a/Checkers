@@ -8,7 +8,7 @@ class Hand {
 public:
     Hand(Board* board): board(board) {}
 
-    pair<int, int> get_cell() {
+    pair<int, int> get_cell() const {
         SDL_Event windowEvent;
         bool quit = false;
         int x = -1, y = -1;
@@ -37,7 +37,7 @@ public:
         return {max(y / (board->H / 10) - 1, 0), max(x / (board->W / 10) - 1, 0)};
     }
     
-    void wait() {
+    void wait() const {
         SDL_Event windowEvent;
         bool quit = false;
         while(true) {
