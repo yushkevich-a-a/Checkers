@@ -5,7 +5,7 @@
 #include <iostream>
 #include <vector>
 
-#include "../Models/Models.h"
+#include "../Models/Move.h"
 
 using namespace std;
 
@@ -17,7 +17,8 @@ class Board
     {
     }
 
-    int draw()
+    // draws start board
+    int start_draw()
     {
         if (SDL_Init(SDL_INIT_EVERYTHING) != 0)
         {
@@ -52,7 +53,9 @@ class Board
         b_piece = IMG_LoadTexture(ren, piece_black_path.c_str());
         w_queen = IMG_LoadTexture(ren, queen_white_path.c_str());
         b_queen = IMG_LoadTexture(ren, queen_black_path.c_str());
-        if (!board || !w_piece || !b_piece || !b_piece || !w_queen || !b_queen)
+        back = IMG_LoadTexture(ren, back_path.c_str());
+        replay = IMG_LoadTexture(ren, replay_path.c_str());
+        if (!board || !w_piece || !b_piece || !b_piece || !w_queen || !b_queen || !back || !replay)
         {
             std::cout << "IMG_LoadTexture Error: " << SDL_GetError() << std::endl;
             return 1;
@@ -63,16 +66,16 @@ class Board
         return 0;
     }
 
-    void move_piece(move_pos turn)
+    void move_piece(move_pos turn, const int beat_series = 0)
     {
         if (turn.xb != -1)
         {
             mtx[turn.xb][turn.yb] = 0;
         }
-        move_piece(turn.x, turn.y, turn.x2, turn.y2);
+        move_piece(turn.x, turn.y, turn.x2, turn.y2, beat_series);
     }
 
-    void move_piece(const POS_T i, const POS_T j, const POS_T i2, const POS_T j2)
+    void move_piece(const POS_T i, const POS_T j, const POS_T i2, const POS_T j2, const int beat_series = 0)
     {
         if (mtx[i2][j2])
         {
@@ -86,6 +89,7 @@ class Board
             mtx[i][j] += 2;
         mtx[i2][j2] = mtx[i][j];
         drop_piece(i, j);
+        add_history(beat_series);
     }
 
     void drop_piece(const POS_T i, const POS_T j)
@@ -93,6 +97,7 @@ class Board
         mtx[i][j] = 0;
         rerender();
     }
+
     void turn_into_queen(const POS_T i, const POS_T j)
     {
         if (mtx[i][j] == 0 || mtx[i][j] > 2 || (mtx[i][j] == 1 && i != 0) || (mtx[i][j] == 2 && i != 7))
@@ -145,12 +150,26 @@ class Board
         return is_highlighted_[x][y];
     }
 
+    void rollback()
+    {
+        auto beat_series = max(1, *(history_beat_series.rbegin()));
+        while (beat_series-- && history_mtx.size() > 1)
+        {
+            history_mtx.pop_back();
+            history_beat_series.pop_back();
+        }
+        mtx = *(history_mtx.rbegin());
+        clear_highlight();
+        clear_active();
+    }
+
     void show_final(const int res)
     {
         game_results = res;
         rerender();
     }
 
+    // use if window size changed
     void reset_window_size()
     {
         SDL_GetRendererOutputSize(ren, &W, &H);
@@ -164,6 +183,8 @@ class Board
         SDL_DestroyTexture(b_piece);
         SDL_DestroyTexture(w_queen);
         SDL_DestroyTexture(b_queen);
+        SDL_DestroyTexture(back);
+        SDL_DestroyTexture(replay);
         SDL_DestroyRenderer(ren);
         SDL_DestroyWindow(win);
         SDL_Quit();
@@ -176,6 +197,12 @@ class Board
     }
 
   private:
+    void add_history(const int beat_series = 0)
+    {
+        history_mtx.push_back(mtx);
+        history_beat_series.push_back(beat_series);
+    }
+    // function to make start matrix
     void make_start_mtx()
     {
         for (POS_T i = 0; i < 8; ++i)
@@ -188,8 +215,10 @@ class Board
                     mtx[i][j] = 1;
             }
         }
+        add_history();
     }
 
+    // function that re-draw all the textures
     void rerender()
     {
         // draw board
@@ -247,6 +276,12 @@ class Board
         }
         SDL_RenderSetScale(ren, 1, 1);
 
+        // draw arrows
+        SDL_Rect rect_left{W / 40, H / 40, W / 15, H / 15};
+        SDL_RenderCopy(ren, back, NULL, &rect_left);
+        SDL_Rect replay_rect{W * 109 / 120, H / 40, W / 15, H / 15};
+        SDL_RenderCopy(ren, replay, NULL, &replay_rect);
+
         // draw result
         if (game_results != -1)
         {
@@ -276,15 +311,22 @@ class Board
   public:
     int W = 0;
     int H = 0;
+    // history of boards
+    vector<vector<vector<POS_T>>> history_mtx;
+    vector<int> history_beat_series;
 
   private:
     SDL_Window *win = nullptr;
     SDL_Renderer *ren = nullptr;
+    // textures
     SDL_Texture *board = nullptr;
     SDL_Texture *w_piece = nullptr;
     SDL_Texture *b_piece = nullptr;
     SDL_Texture *w_queen = nullptr;
     SDL_Texture *b_queen = nullptr;
+    SDL_Texture *back = nullptr;
+    SDL_Texture *replay = nullptr;
+    // texture files names
     const string project_path = "../../../cpp_lesson/Textures/";
     const string board_path = project_path + "board.png";
     const string piece_white_path = project_path + "piece_white.png";
@@ -294,9 +336,15 @@ class Board
     const string white_path = project_path + "white_wins.png";
     const string black_path = project_path + "black_wins.png";
     const string draw_path = project_path + "draw.png";
+    const string back_path = project_path + "back.png";
+    const string replay_path = project_path + "replay.png";
+    // coordinates of chosen cell
     int active_x = -1, active_y = -1;
+    // game result if exist
     int game_results = -1;
+    // matrix of possible moves
     vector<vector<bool>> is_highlighted_ = vector<vector<bool>>(8, vector<bool>(8, 0));
-    vector<vector<POS_T>> mtx = vector<vector<POS_T>>(8, vector<POS_T>(8, 0));
+    // matrix of possible moves
     // 1 - white, 2 - black, 3 - white queen, 4 - black queen
+    vector<vector<POS_T>> mtx = vector<vector<POS_T>>(8, vector<POS_T>(8, 0));
 };

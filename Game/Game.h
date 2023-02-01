@@ -14,46 +14,53 @@ class Game
     {
     }
 
+    // to start checkers
     int play()
     {
         auto start = chrono::steady_clock::now();
-        board.draw();
+        board.start_draw();
 
         int turn_num = -1;
         bool is_quit = false;
+        const int Max_turns = config("Game", "MaxNumTurns");
         while (++turn_num < Max_turns)
         {
+            beat_series = 0;
             logic.find_turns(turn_num % 2);
             if (logic.turns.empty())
                 break;
-            if (turn_num % 2)
+            logic.Max_depth = config("Bot", string((turn_num % 2) ? "Black" : "White") + string("BotLevel"));
+            if (!config("Bot", string("Is") + string((turn_num % 2) ? "Black" : "White") + string("Bot")))
             {
-                logic.Max_depth = config("Bot", "BlackBotLevel");
-                if (!config("Bot", "IsBlackBot"))
+                auto resp = player_turn(turn_num % 2);
+                if (resp == Response::QUIT)
                 {
-                    if (player_turn(1))
-                    {
-                        is_quit = true;
-                        return 0;
-                    }
+                    is_quit = true;
+                    break;
                 }
-                else
-                    bot_turn(1);
+                if (resp == Response::BACK)
+                {
+                    if (config("Bot", string("Is") + string((1 - turn_num % 2) ? "Black" : "White") + string("Bot")) &&
+                        !beat_series && board.history_mtx.size() > 2)
+                    {
+                        board.rollback();
+                        --turn_num;
+                    }
+                    if (!beat_series)
+                        --turn_num;
+
+                    board.rollback();
+                    --turn_num;
+                    beat_series = 0;
+                }
+                if (resp == Response::REPLAY)
+                {
+                    is_quit = true;
+                    break;
+                }
             }
             else
-            {
-                logic.Max_depth = config("Bot", "WhiteBotLevel");
-                if (!config("Bot", "IsWhiteBot"))
-                {
-                    if (player_turn(0))
-                    {
-                        is_quit = true;
-                        return 0;
-                    }
-                }
-                else
-                    bot_turn(0);
-            }
+                bot_turn(turn_num % 2);
         }
         auto end = chrono::steady_clock::now();
         cout << "Game time: " << (int)chrono::duration<double, milli>(end - start).count() << " millisec\n";
@@ -77,11 +84,14 @@ class Game
     void bot_turn(const bool color)
     {
         auto start = chrono::steady_clock::now();
+
         auto delay_ms = config("Bot", "BotDelayMS");
+        // new thread for equal delay for each turn
         thread th(SDL_Delay, delay_ms);
         auto turns = logic.find_best_turns(color);
         th.join();
         bool is_first = true;
+        // making moves
         for (auto turn : turns)
         {
             if (!is_first)
@@ -91,11 +101,12 @@ class Game
             is_first = false;
             board.move_piece(turn);
         }
+
         auto end = chrono::steady_clock::now();
         cout << "Bot turn time: " << (int)chrono::duration<double, milli>(end - start).count() << " millisec\n";
     }
 
-    bool player_turn(const bool color)
+    Response player_turn(const bool color)
     {
         // return 1 if quit
         vector<pair<POS_T, POS_T>> cells;
@@ -106,11 +117,13 @@ class Game
         board.highlight_cells(cells);
         move_pos pos = {-1, -1, -1, -1};
         POS_T x = -1, y = -1;
+        // trying to make first move
         while (true)
         {
-            auto cell = hand.get_cell();
-            if (cell.first == -1)
-                return 1;
+            auto resp = hand.get_cell();
+            if (get<0>(resp) != Response::CELL)
+                return get<0>(resp);
+            pair<POS_T, POS_T> cell{get<1>(resp), get<2>(resp)};
 
             bool is_correct = false;
             for (auto turn : logic.turns)
@@ -156,10 +169,11 @@ class Game
         }
         board.clear_highlight();
         board.clear_active();
-        board.move_piece(pos);
+        board.move_piece(pos, pos.xb != -1);
         if (pos.xb == -1)
-            return 0;
-        // continue beating
+            return Response::OK;
+        // continue beating while can
+        beat_series = 1;
         while (true)
         {
             logic.find_turns(pos.x2, pos.y2);
@@ -173,12 +187,13 @@ class Game
             }
             board.highlight_cells(cells);
             board.set_active(pos.x2, pos.y2);
-
+            // trying to make move
             while (true)
             {
-                auto cell = hand.get_cell();
-                if (cell.first == -1)
-                    return 1;
+                auto resp = hand.get_cell();
+                if (get<0>(resp) != Response::CELL)
+                    return get<0>(resp);
+                pair<POS_T, POS_T> cell{get<1>(resp), get<2>(resp)};
 
                 bool is_correct = false;
                 for (auto turn : logic.turns)
@@ -195,12 +210,13 @@ class Game
 
                 board.clear_highlight();
                 board.clear_active();
-                board.move_piece(pos);
+                beat_series += 1;
+                board.move_piece(pos, beat_series);
                 break;
             }
         }
 
-        return 0;
+        return Response::OK;
     }
 
   private:
@@ -208,5 +224,5 @@ class Game
     Board board;
     Hand hand;
     Logic logic;
-    const int Max_turns = 130;
+    int beat_series;
 };

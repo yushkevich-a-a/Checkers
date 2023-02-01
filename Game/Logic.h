@@ -1,7 +1,7 @@
 #pragma once
 #include <vector>
 
-#include "../Models/Models.h"
+#include "../Models/Move.h"
 #include "Board.h"
 #include "Config.h"
 

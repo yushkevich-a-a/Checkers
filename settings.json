@@ -5,12 +5,15 @@
     },
     "Bot": {
         "IsWhiteBot": false,
-        "IsBlackBot": true,
+        "IsBlackBot": false,
         "WhiteBotLevel": 0,
         "BlackBotLevel": 3,
         "BotScoringType": "NumberAndPotential",
         "BotDelayMS": 1000,
         "NoRandom": false,
-        "Optimization": "O1"
+        "Optimization": "O2"
+    },
+    "Game": {
+        "MaxNumTurns": 120
     }
 }
