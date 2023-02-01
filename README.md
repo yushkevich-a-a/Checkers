@@ -13,9 +13,11 @@ Hight - unsigned int from 0 to screen size. 0 - fullscreen.
 ### Bot
 IsWhiteBot - true/false.  
 IsBlackBot - true/false.  
-WhiteBotLevel - unsigned int from 0. If "IsWhiteBot" is set true then the depth of calculation will be "WhiteBotLevel" + 1. (0 - 2 is eazy, 3 - 5 medium, 6 - 12 is hard. 6+ levels can be slow without "Optimization").   
-BlackBotLevel - unsigned int from 0. If "IsBlackBot" is set true then the depth of calculation will be "BlackBotLevel" + 1.  
+WhiteBotLevel - unsigned int. If "IsWhiteBot" is set true then the depth of calculation will be "WhiteBotLevel" + 1. (0 - 2 is eazy, 3 - 5 medium, 6 - 12 is hard. 6+ levels can be slow without "Optimization").   
+BlackBotLevel - unsigned int. If "IsBlackBot" is set true then the depth of calculation will be "BlackBotLevel" + 1.  
 BotScoringType - "NumberOnly" (the bot takes into account only the number of checkers)  or "NumberAndPotential" (the bot also takes into account the positions of checkers).  
-BotDelayMS - unsigned int from 0. Minimum delay per bot move.  
+BotDelayMS - unsigned int. Minimum delay per bot move.  
 NoRandom - true/false. Whether the bot will be deterministic.  
 Optimization - "O0"/"O1"/"O2". They provide significant optimization in terms of the time of the bot's progress. O0 disables optimization, O1 allows you to cut off the worst branches of the search, O2 is much faster, but it can affect the choice of the move.  
+### Game
+MaxNumTurns - unsigned int. Maximum number of turns before draw.  
