@@ -6,10 +6,14 @@ using json = nlohmann::json;
 
 class Config {
 public:
-    auto operator()(const string& setting_dir, const string& setting_name) const {
+    Config() {
         std::ifstream fin("../../../cpp_lesson/settings.json");
-        json conf;
-        fin >> conf;
-        return conf[setting_dir][setting_name];
+        fin >> config;
+        fin.close();
     }
+    auto operator()(const string& setting_dir, const string& setting_name) const {
+        return config[setting_dir][setting_name];
+    }
+private:
+    json config;
 };

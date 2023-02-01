@@ -72,9 +72,7 @@ private:
             board.move_piece(turn);
         }
         auto end = chrono::steady_clock::now();
-        cout << "Bot turn time: " << (int)chrono::duration <double, milli> (end - start).count() << " millisec\n";
-        // 2348 2287 5 > 1000
-    }
+        cout << "Bot turn time: " << (int)chrono::duration <double, milli> (end - start).count() << " millisec\n";    }
     
     bool player_turn(const bool color) {
         // return 1 if quit
