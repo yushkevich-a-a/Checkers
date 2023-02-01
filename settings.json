@@ -1,0 +1,16 @@
+{
+    "WindowSize": {
+        "Width": 500,
+        "Hight": 500
+    },
+    "Bot": {
+        "IsWhiteBot": false,
+        "IsBlackBot": true,
+        "WhiteBotLevel": 0,
+        "BlackBotLevel": 3,
+        "BotScoringType": "NumberAndPotential",
+        "BotDelayMS": 1000,
+        "NoRandom": false,
+        "Optimization": "O1"
+    }
+}

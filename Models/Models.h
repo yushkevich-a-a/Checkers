@@ -1,5 +1,4 @@
 #pragma once
-
 #include <stdlib.h>
 
 typedef int8_t POS_T;

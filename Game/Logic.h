@@ -1,6 +1,7 @@
 #pragma once
 #include "../Models/Models.h"
 #include "Board.h"
+#include "Config.h"
 
 #include <vector>
 
@@ -8,7 +9,15 @@ const int INF = 1e9;
 
 class Logic {
 public:
-    Logic(Board* board): board(board) {}
+    Logic(Board* board, Config* config): board(board), config(config) {
+        if (!((*config)("Bot", "NoRandom"))) {
+            srand(time(0));
+        } else {
+            srand(0);
+        }
+        scoring_mode = (*config)("Bot", "BotScoringType");
+        optimization = (*config)("Bot", "Optimization");
+    }
     
     void find_turns(const bool color) {
         find_turns(color, board->get_board());
@@ -42,55 +51,32 @@ private:
         return mtx;
     }
     
-    double calc_score(const vector<vector<POS_T>>& mtx, const bool color) const {
-        if (color) return calc_score_black(mtx, color);
-        else return calc_score_white(mtx, color);
-    }
-    
-    double calc_score_white(const vector<vector<POS_T>>& mtx, const bool color) const {
+    double calc_score(const vector<vector<POS_T>>& mtx, const bool first_bot_color) const {
         // color - who is max player
         double w = 0, wq = 0, b = 0, bq = 0;
         for (POS_T i = 0; i < 8; ++i) {
             for (POS_T j = 0; j < 8; ++j) {
                 w += (mtx[i][j] == 1);
-                 w += 0.1 * (mtx[i][j] == 1) * (7 - i);
                 wq += (mtx[i][j] == 3);
                 b += (mtx[i][j] == 2);
-                 b += 0.1 * (mtx[i][j] == 2) * (i);
                 bq += (mtx[i][j] == 4);
+                if (scoring_mode == "NumberAndPotential") {
+                    w += 0.1 * (mtx[i][j] == 1) * (7 - i);
+                    b += 0.1 * (mtx[i][j] == 2) * (i);
+                }
             }
         }
-        if (!color) {
+        if (!first_bot_color) {
             swap(b, w);
             swap(bq, wq);
         }
         if (w + wq == 0) return INF;
         if (b + bq == 0) return 0;
-         return (b + bq * 7) / (w + wq * 7);
-        return (b + bq * 4) / (w + wq * 4);
-    }
-    
-    double calc_score_black(const vector<vector<POS_T>>& mtx, const bool color) const {
-        // color - who is max player
-        double w = 0, wq = 0, b = 0, bq = 0;
-        for (POS_T i = 0; i < 8; ++i) {
-            for (POS_T j = 0; j < 8; ++j) {
-                w += (mtx[i][j] == 1);
-                 w += 0.1 * (mtx[i][j] == 1) * (7 - i);
-                wq += (mtx[i][j] == 3);
-                b += (mtx[i][j] == 2);
-                 b += 0.1 * (mtx[i][j] == 2) * (i);
-                bq += (mtx[i][j] == 4);
-            }
+        int q_coef = 4;
+        if (scoring_mode == "NumberAndPotential") {
+            int q_coef = 7;
         }
-        if (!color) {
-            swap(b, w);
-            swap(bq, wq);
-        }
-        if (w + wq == 0) return INF;
-        if (b + bq == 0) return 0;
-         return (b + bq * 7) / (w + wq * 7);
-        return (b + bq * 4) / (w + wq * 4);
+        return (b + bq * q_coef) / (w + wq * q_coef);
     }
 
     double find_first_best_turn(vector<vector<POS_T>> mtx, const bool color, const POS_T x, const POS_T y, size_t state, double alpha = -1) {
@@ -126,10 +112,11 @@ private:
                 best_moves.push_back(turn);
             }
         }
-        // srand(time(0));
+        
         size_t idx = rand() % best_moves.size();
         next_best_state[state] = best_states[idx];
         next_move[state] = best_moves[idx];
+        
         return best_score;
     }
     
@@ -143,9 +130,9 @@ private:
         if (depth == Max_depth) {
             return calc_score(mtx, (depth % 2 == color));
         }
-        if (x != -1)
+        if (x != -1) {
             find_turns(x, y, mtx);
-        else find_turns(color, mtx);
+        } else find_turns(color, mtx);
         auto turns_now = turns;
         bool have_beats_now = have_beats;
         
@@ -169,7 +156,8 @@ private:
             // alpha-beta pruning
             if (depth % 2) alpha = max(alpha, max_score);
             else beta = min(beta, min_score);
-            if (alpha >= beta) break;
+            if (optimization != "O0" && alpha > beta) break;
+            if (optimization == "O2" && alpha == beta) break;
         }
         return (depth % 2 ? max_score : min_score);
     }
@@ -280,7 +268,10 @@ public:
     bool have_beats;
     int Max_depth;
 private:
+    string scoring_mode;
+    string optimization;
     vector<move_pos> next_move;
     vector<int> next_best_state;
     Board* board;
+    Config* config;
 };

@@ -39,27 +39,11 @@ public:
             return 1;
         }
         board = IMG_LoadTexture(ren, board_path.c_str());
-        if (board == nullptr) {
-            std::cout << "IMG_LoadTexture Error: " << SDL_GetError() << std::endl;
-            return 1;
-        }
         w_piece = IMG_LoadTexture(ren, piece_white_path.c_str());
-        if (w_piece == nullptr) {
-            std::cout << "IMG_LoadTexture Error: " << SDL_GetError() << std::endl;
-            return 1;
-        }
         b_piece = IMG_LoadTexture(ren, piece_black_path.c_str());
-        if (b_piece == nullptr) {
-            std::cout << "IMG_LoadTexture Error: " << SDL_GetError() << std::endl;
-            return 1;
-        }
         w_queen = IMG_LoadTexture(ren, queen_white_path.c_str());
-        if (w_queen == nullptr) {
-            std::cout << "IMG_LoadTexture Error: " << SDL_GetError() << std::endl;
-            return 1;
-        }
         b_queen = IMG_LoadTexture(ren, queen_black_path.c_str());
-        if (b_queen == nullptr) {
+        if (!board || !w_piece || !b_piece || !b_piece || !w_queen || !b_queen) {
             std::cout << "IMG_LoadTexture Error: " << SDL_GetError() << std::endl;
             return 1;
         }
@@ -232,7 +216,7 @@ private:
         
         SDL_RenderPresent(ren);
         // next rows for mac os
-        SDL_Delay(6);
+        SDL_Delay(10);
         SDL_Event windowEvent;
         SDL_PollEvent(&windowEvent);
     }
@@ -248,7 +232,7 @@ private:
     SDL_Texture* b_piece = nullptr;
     SDL_Texture* w_queen = nullptr;
     SDL_Texture* b_queen = nullptr;
-    const string project_path = "/Users/ifrair/Desktop/Проекты С++/xcode_projects/cpp_lesson/cpp_lesson/Textures/";
+    const string project_path = "../../../cpp_lesson/Textures/";
     const string board_path = project_path + "board.png";
     const string piece_white_path = project_path + "piece_white.png";
     const string piece_black_path = project_path + "piece_black.png";

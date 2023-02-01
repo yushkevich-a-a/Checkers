@@ -1,5 +1,6 @@
 #pragma once
 #include "Board.h"
+#include "Config.h"
 #include "Hand.h"
 #include "Logic.h"
 
@@ -8,21 +9,10 @@
 
 class Game {
 public:
-    Game():
-        board(),
-        hand(&board),
-        logic(&board) {}
-    Game(const unsigned int W, const unsigned int H) :
-        board(W, H),
-        hand(&board),
-        logic(&board) {}
+    Game() : board(config("WindowSize", "Width"), config("WindowSize", "Hight")), hand(&board), logic(&board, &config) {}
     
-    int play(const int delay_ms = 1000, const bool is_bot_first = false,
-             const bool is_bot_second = true,
-             const int first_bot_level = 5,
-             const int second_bot_level = 5) {
+    int play() {
         auto start = chrono::steady_clock::now();
-        delay = delay_ms;
         board.draw();
         
         int turn_num = -1;
@@ -31,8 +21,8 @@ public:
             logic.find_turns(turn_num % 2);
             if (logic.turns.empty()) break;
             if (turn_num % 2) {
-                logic.Max_depth = second_bot_level;
-                if (!is_bot_second) {
+                logic.Max_depth = config("Bot", "BlackBotLevel");
+                if (!config("Bot", "IsBlackBot")) {
                     if (player_turn(1)) {
                         is_quit = true;
                         return 0;
@@ -41,8 +31,8 @@ public:
                 else bot_turn(1);
             }
             else {
-                logic.Max_depth = first_bot_level;
-                if (!is_bot_first) {
+                logic.Max_depth = config("Bot", "WhiteBotLevel");
+                if (!config("Bot", "IsWhiteBot")) {
                     if (player_turn(0)) {
                         is_quit = true;
                         return 0;
@@ -53,7 +43,6 @@ public:
         }
         auto end = chrono::steady_clock::now();
         cout << "Game time: " << (int)chrono::duration <double, milli> (end - start).count() << " millisec\n";
-        // 6 6 23000->11300->3076   7 6 119479->56991->3838   10 9 29776
         if (is_quit) return 0;
         int res = 2;
         if (turn_num == Max_turns) {
@@ -70,13 +59,14 @@ public:
 private:
     void bot_turn(const bool color) {
         auto start = chrono::steady_clock::now();
-        thread th(SDL_Delay, delay);
+        auto delay_ms = config("Bot", "BotDelayMS");
+        thread th(SDL_Delay, delay_ms);
         auto turns = logic.find_best_turns(color);
         th.join();
         bool is_first = true;
         for (auto turn: turns) {
             if (!is_first) {
-                SDL_Delay(delay);
+                SDL_Delay(delay_ms);
             }
             is_first = false;
             board.move_piece(turn);
@@ -176,9 +166,9 @@ private:
     }
     
 private:
+    Config config;
     Board board;
     Hand hand;
     Logic logic;
-    int delay = 1000;
     const int Max_turns = 130;
 };
