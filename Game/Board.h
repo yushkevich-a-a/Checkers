@@ -66,6 +66,16 @@ class Board
         return 0;
     }
 
+    void redraw()
+    {
+        game_results = -1;
+        history_mtx.clear();
+        history_beat_series.clear();
+        make_start_mtx();
+        clear_active();
+        clear_highlight();
+    }
+
     void move_piece(move_pos turn, const int beat_series = 0)
     {
         if (turn.xb != -1)
@@ -100,7 +110,7 @@ class Board
 
     void turn_into_queen(const POS_T i, const POS_T j)
     {
-        if (mtx[i][j] == 0 || mtx[i][j] > 2 || (mtx[i][j] == 1 && i != 0) || (mtx[i][j] == 2 && i != 7))
+        if (mtx[i][j] == 0 || mtx[i][j] > 2)
         {
             throw runtime_error("can't turn into queen in this position");
         }
@@ -209,6 +219,7 @@ class Board
         {
             for (POS_T j = 0; j < 8; ++j)
             {
+                mtx[i][j] = 0;
                 if (i < 3 && (i + j) % 2 == 1)
                     mtx[i][j] = 2;
                 if (i > 4 && (i + j) % 2 == 1)
@@ -313,7 +324,6 @@ class Board
     int H = 0;
     // history of boards
     vector<vector<vector<POS_T>>> history_mtx;
-    vector<int> history_beat_series;
 
   private:
     SDL_Window *win = nullptr;
@@ -347,4 +357,6 @@ class Board
     // matrix of possible moves
     // 1 - white, 2 - black, 3 - white queen, 4 - black queen
     vector<vector<POS_T>> mtx = vector<vector<POS_T>>(8, vector<POS_T>(8, 0));
+    // series of beats for each move
+    vector<int> history_beat_series;
 };

@@ -18,7 +18,17 @@ class Game
     int play()
     {
         auto start = chrono::steady_clock::now();
-        board.start_draw();
+        if (is_replay)
+        {
+            logic = Logic(&board, &config);
+            config.reload();
+            board.redraw();
+        }
+        else
+        {
+            board.start_draw();
+        }
+        is_replay = false;
 
         int turn_num = -1;
         bool is_quit = false;
@@ -38,7 +48,12 @@ class Game
                     is_quit = true;
                     break;
                 }
-                if (resp == Response::BACK)
+                else if (resp == Response::REPLAY)
+                {
+                    is_replay = true;
+                    break;
+                }
+                else if (resp == Response::BACK)
                 {
                     if (config("Bot", string("Is") + string((1 - turn_num % 2) ? "Black" : "White") + string("Bot")) &&
                         !beat_series && board.history_mtx.size() > 2)
@@ -53,17 +68,15 @@ class Game
                     --turn_num;
                     beat_series = 0;
                 }
-                if (resp == Response::REPLAY)
-                {
-                    is_quit = true;
-                    break;
-                }
             }
             else
                 bot_turn(turn_num % 2);
         }
         auto end = chrono::steady_clock::now();
         cout << "Game time: " << (int)chrono::duration<double, milli>(end - start).count() << " millisec\n";
+
+        if (is_replay)
+            return play();
         if (is_quit)
             return 0;
         int res = 2;
@@ -76,7 +89,12 @@ class Game
             res = 1;
         }
         board.show_final(res);
-        hand.wait();
+        auto resp = hand.wait();
+        if (resp == Response::REPLAY)
+        {
+            is_replay = true;
+            return play();
+        }
         return res;
     }
 
@@ -99,7 +117,8 @@ class Game
                 SDL_Delay(delay_ms);
             }
             is_first = false;
-            board.move_piece(turn);
+            beat_series += (turn.xb != -1);
+            board.move_piece(turn, beat_series);
         }
 
         auto end = chrono::steady_clock::now();
@@ -225,4 +244,5 @@ class Game
     Hand hand;
     Logic logic;
     int beat_series;
+    bool is_replay = false;
 };

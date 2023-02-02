@@ -17,7 +17,7 @@ class Hand
     tuple<Response, POS_T, POS_T> get_cell() const
     {
         SDL_Event windowEvent;
-        Response resp = Response::CELL;
+        Response resp = Response::OK;
         int x = -1, y = -1;
         int xc = -1, yc = -1;
         while (true)
@@ -35,10 +35,18 @@ class Hand
                     xc = int(y / (board->H / 10) - 1);
                     yc = int(x / (board->W / 10) - 1);
                     if (xc == -1 && yc == -1 && board->history_mtx.size() > 1)
+                    {
                         resp = Response::BACK;
-                    if (xc == -1 && yc == 8)
+                    }
+                    else if (xc == -1 && yc == 8)
+                    {
                         resp = Response::REPLAY;
-                    if (xc < 0 || xc >= 8 || yc < 0 || yc >= 8)
+                    }
+                    else if (xc >= 0 && xc < 8 && yc >= 0 && yc < 8)
+                    {
+                        resp = Response::CELL;
+                    }
+                    else
                     {
                         xc = -1;
                         yc = -1;
@@ -51,17 +59,17 @@ class Hand
                         break;
                     }
                 }
-                if (xc != -1 || resp != Response::CELL)
+                if (resp != Response::OK)
                     break;
             }
         }
         return {resp, xc, yc};
     }
 
-    void wait() const
+    Response wait() const
     {
         SDL_Event windowEvent;
-        bool quit = false;
+        Response resp = Response::OK;
         while (true)
         {
             if (SDL_PollEvent(&windowEvent))
@@ -69,16 +77,26 @@ class Hand
                 switch (windowEvent.type)
                 {
                 case SDL_QUIT:
-                    quit = true;
+                    resp = Response::QUIT;
                     break;
                 case SDL_WINDOWEVENT_SIZE_CHANGED:
                     board->reset_window_size();
                     break;
+                case SDL_MOUSEBUTTONDOWN: {
+                    int x = windowEvent.motion.x;
+                    int y = windowEvent.motion.y;
+                    int xc = int(y / (board->H / 10) - 1);
+                    int yc = int(x / (board->W / 10) - 1);
+                    if (xc == -1 && yc == 8)
+                        resp = Response::REPLAY;
                 }
-                if (quit)
+                break;
+                }
+                if (resp != Response::OK)
                     break;
             }
         }
+        return resp;
     }
 
   private:
