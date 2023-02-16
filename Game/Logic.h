@@ -194,9 +194,9 @@ class Logic
                 alpha = max(alpha, max_score);
             else
                 beta = min(beta, min_score);
-            if (optimization != "O0" && alpha > beta)
-                break;
             if (optimization == "O2" && alpha == beta)
+                return (depth % 2 ? max_score + 1 : min_score - 1);
+            if (optimization != "O0" && alpha > beta)
                 break;
         }
         return (depth % 2 ? max_score : min_score);
