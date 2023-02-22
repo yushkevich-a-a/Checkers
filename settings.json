@@ -1,0 +1,19 @@
+{
+    "WindowSize": {
+        "Width": 0,
+        "Hight": 0
+    },
+    "Bot": {
+        "IsWhiteBot": false,
+        "IsBlackBot": true,
+        "WhiteBotLevel": 0,
+        "BlackBotLevel": 5,
+        "BotScoringType": "NumberAndPotential",
+        "BotDelayMS": 1000,
+        "NoRandom": false,
+        "Optimization": "O2"
+    },
+    "Game": {
+        "MaxNumTurns": 120
+    }
+}

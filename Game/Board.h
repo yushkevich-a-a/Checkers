@@ -1,5 +1,6 @@
 #pragma once
 #include <iostream>
+#include <fstream>
 #include <vector>
 
 #include "../Models/Move.h"
@@ -18,7 +19,7 @@ using namespace std;
 
 class Board
 {
-  public:
+public:
     Board() = default;
     Board(const unsigned int W, const unsigned int H) : W(W), H(H)
     {
@@ -29,7 +30,7 @@ class Board
     {
         if (SDL_Init(SDL_INIT_EVERYTHING) != 0)
         {
-            std::cout << "SDL_Init Error: " << SDL_GetError() << std::endl;
+            print_exception("SDL_Init can't init SDL2 lib");
             return 1;
         }
         if (W == 0 || H == 0)
@@ -37,22 +38,24 @@ class Board
             SDL_DisplayMode dm;
             if (SDL_GetDesktopDisplayMode(0, &dm))
             {
-                std::cout << "SDL_GetDesktopDisplayMode Error: " << SDL_GetError() << std::endl;
+                print_exception("SDL_GetDesktopDisplayMode can't get desctop display mode");
                 return 1;
             }
-            W = dm.w;
-            H = dm.h;
+            W = min(dm.w, dm.h);
+            W -= W / 15;
+            H = W;
         }
-        win = SDL_CreateWindow("Checkers", 0, 0, W, H, SDL_WINDOW_RESIZABLE);
+        print_exception(to_string(W) + to_string(H));
+        win = SDL_CreateWindow("Checkers", 0, H / 30, W, H, SDL_WINDOW_RESIZABLE);
         if (win == nullptr)
         {
-            std::cout << "SDL_CreateWindow Error: " << SDL_GetError() << std::endl;
+            print_exception("SDL_CreateWindow can't create window");
             return 1;
         }
         ren = SDL_CreateRenderer(win, -1, SDL_RENDERER_ACCELERATED | SDL_RENDERER_PRESENTVSYNC);
         if (ren == nullptr)
         {
-            std::cout << "SDL_CreateRenderer Error: " << SDL_GetError() << std::endl;
+            print_exception("SDL_CreateRenderer can't create renderer");
             return 1;
         }
         board = IMG_LoadTexture(ren, board_path.c_str());
@@ -62,9 +65,9 @@ class Board
         b_queen = IMG_LoadTexture(ren, queen_black_path.c_str());
         back = IMG_LoadTexture(ren, back_path.c_str());
         replay = IMG_LoadTexture(ren, replay_path.c_str());
-        if (!board || !w_piece || !b_piece || !b_piece || !w_queen || !b_queen || !back || !replay)
+        if (!board || !w_piece || !b_piece || !w_queen || !b_queen || !back || !replay)
         {
-            std::cout << "IMG_LoadTexture Error: " << SDL_GetError() << std::endl;
+            print_exception("IMG_LoadTexture can't load main textures from " + textures_path);
             return 1;
         }
         SDL_GetRendererOutputSize(ren, &W, &H);
@@ -213,7 +216,7 @@ class Board
             quit();
     }
 
-  private:
+private:
     void add_history(const int beat_series = 0)
     {
         history_mtx.push_back(mtx);
@@ -252,9 +255,9 @@ class Board
                     continue;
                 int wpos = W * (j + 1) / 10 + W / 120;
                 int hpos = H * (i + 1) / 10 + H / 120;
-                SDL_Rect rect{wpos, hpos, W / 12, H / 12};
+                SDL_Rect rect{ wpos, hpos, W / 12, H / 12 };
 
-                SDL_Texture *piece_texture;
+                SDL_Texture* piece_texture;
                 if (mtx[i][j] == 1)
                     piece_texture = w_piece;
                 else if (mtx[i][j] == 2)
@@ -278,8 +281,8 @@ class Board
             {
                 if (!is_highlighted_[i][j])
                     continue;
-                SDL_Rect cell{int(W * (j + 1) / 10 / scale), int(H * (i + 1) / 10 / scale), int(W / 10 / scale),
-                              int(H / 10 / scale)};
+                SDL_Rect cell{ int(W * (j + 1) / 10 / scale), int(H * (i + 1) / 10 / scale), int(W / 10 / scale),
+                              int(H / 10 / scale) };
                 SDL_RenderDrawRect(ren, &cell);
             }
         }
@@ -288,16 +291,16 @@ class Board
         if (active_x != -1)
         {
             SDL_SetRenderDrawColor(ren, 255, 0, 0, 0);
-            SDL_Rect active_cell{int(W * (active_y + 1) / 10 / scale), int(H * (active_x + 1) / 10 / scale),
-                                 int(W / 10 / scale), int(H / 10 / scale)};
+            SDL_Rect active_cell{ int(W * (active_y + 1) / 10 / scale), int(H * (active_x + 1) / 10 / scale),
+                                 int(W / 10 / scale), int(H / 10 / scale) };
             SDL_RenderDrawRect(ren, &active_cell);
         }
         SDL_RenderSetScale(ren, 1, 1);
 
         // draw arrows
-        SDL_Rect rect_left{W / 40, H / 40, W / 15, H / 15};
+        SDL_Rect rect_left{ W / 40, H / 40, W / 15, H / 15 };
         SDL_RenderCopy(ren, back, NULL, &rect_left);
-        SDL_Rect replay_rect{W * 109 / 120, H / 40, W / 15, H / 15};
+        SDL_Rect replay_rect{ W * 109 / 120, H / 40, W / 15, H / 15 };
         SDL_RenderCopy(ren, replay, NULL, &replay_rect);
 
         // draw result
@@ -308,13 +311,13 @@ class Board
                 result_path = white_path;
             else if (game_results == 2)
                 result_path = black_path;
-            SDL_Texture *result_texture = IMG_LoadTexture(ren, result_path.c_str());
+            SDL_Texture* result_texture = IMG_LoadTexture(ren, result_path.c_str());
             if (result_texture == nullptr)
             {
-                std::cout << "IMG_LoadTexture Error: " << SDL_GetError() << std::endl;
+                print_exception("IMG_LoadTexture can't load game result picture from " + result_path);
                 return;
             }
-            SDL_Rect res_rect{W / 5, H * 3 / 10, W * 3 / 5, H * 2 / 5};
+            SDL_Rect res_rect{ W / 5, H * 3 / 10, W * 3 / 5, H * 2 / 5 };
             SDL_RenderCopy(ren, result_texture, NULL, &res_rect);
             SDL_DestroyTexture(result_texture);
         }
@@ -324,6 +327,12 @@ class Board
         SDL_Delay(10);
         SDL_Event windowEvent;
         SDL_PollEvent(&windowEvent);
+    }
+
+    void print_exception(const string& text) {
+        ofstream fout("log.txt", ios_base::app);
+        fout << "Error: " << text << ". "<< SDL_GetError() << endl;
+        fout.close();
     }
 
   public:

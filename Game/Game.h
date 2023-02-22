@@ -12,6 +12,8 @@ class Game
   public:
     Game() : board(config("WindowSize", "Width"), config("WindowSize", "Hight")), hand(&board), logic(&board, &config)
     {
+        ofstream fout("log.txt", ios_base::trunc);
+        fout.close();
     }
 
     // to start checkers
@@ -73,7 +75,9 @@ class Game
                 bot_turn(turn_num % 2);
         }
         auto end = chrono::steady_clock::now();
-        cout << "Game time: " << (int)chrono::duration<double, milli>(end - start).count() << " millisec\n";
+        ofstream fout("log.txt", ios_base::app);
+        fout << "Game time: " << (int)chrono::duration<double, milli>(end - start).count() << " millisec\n";
+        fout.close();
 
         if (is_replay)
             return play();
@@ -122,7 +126,9 @@ class Game
         }
 
         auto end = chrono::steady_clock::now();
-        cout << "Bot turn time: " << (int)chrono::duration<double, milli>(end - start).count() << " millisec\n";
+        ofstream fout("log.txt", ios_base::app);
+        fout << "Bot turn time: " << (int)chrono::duration<double, milli>(end - start).count() << " millisec\n";
+        fout.close();
     }
 
     Response player_turn(const bool color)

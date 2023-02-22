@@ -77,8 +77,8 @@ class Logic
                 bq += (mtx[i][j] == 4);
                 if (scoring_mode == "NumberAndPotential")
                 {
-                    w += 0.1 * (mtx[i][j] == 1) * (7 - i);
-                    b += 0.1 * (mtx[i][j] == 2) * (i);
+                    w += 0.05 * (mtx[i][j] == 1) * (7 - i);
+                    b += 0.05 * (mtx[i][j] == 2) * (i);
                 }
             }
         }
@@ -94,7 +94,7 @@ class Logic
         int q_coef = 4;
         if (scoring_mode == "NumberAndPotential")
         {
-            q_coef = 7;
+            q_coef = 5;
         }
         return (b + bq * q_coef) / (w + wq * q_coef);
     }
