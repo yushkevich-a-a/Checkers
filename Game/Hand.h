@@ -1,11 +1,15 @@
 #pragma once
-#include <SDL2/SDL.h>
-
 #include <tuple>
 
 #include "../Models/Move.h"
 #include "../Models/Response.h"
 #include "Board.h"
+
+#ifdef __APPLE__
+    #include <SDL2/SDL.h>
+#else
+    #include <SDL.h>
+#endif
 
 // methods for hands
 class Hand

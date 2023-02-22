@@ -1,11 +1,18 @@
 #pragma once
-#include <SDL2/SDL.h>
-#include <SDL2/SDL_image.h>
-
 #include <iostream>
 #include <vector>
 
 #include "../Models/Move.h"
+
+#ifdef __APPLE__
+    #include <SDL2/SDL.h>
+    #include <SDL2/SDL_image.h>
+    #define  textures_path string("../../../cpp_lesson/Textures/")
+#else
+    #include <SDL.h>
+    #include <SDL_image.h>
+    #define  textures_path string("Textures/")
+#endif
 
 using namespace std;
 
@@ -337,17 +344,16 @@ class Board
     SDL_Texture *back = nullptr;
     SDL_Texture *replay = nullptr;
     // texture files names
-    const string project_path = "../../../cpp_lesson/Textures/";
-    const string board_path = project_path + "board.png";
-    const string piece_white_path = project_path + "piece_white.png";
-    const string piece_black_path = project_path + "piece_black.png";
-    const string queen_white_path = project_path + "queen_white.png";
-    const string queen_black_path = project_path + "queen_black.png";
-    const string white_path = project_path + "white_wins.png";
-    const string black_path = project_path + "black_wins.png";
-    const string draw_path = project_path + "draw.png";
-    const string back_path = project_path + "back.png";
-    const string replay_path = project_path + "replay.png";
+    const string board_path = textures_path + "board.png";
+    const string piece_white_path = textures_path + "piece_white.png";
+    const string piece_black_path = textures_path + "piece_black.png";
+    const string queen_white_path = textures_path + "queen_white.png";
+    const string queen_black_path = textures_path + "queen_black.png";
+    const string white_path = textures_path + "white_wins.png";
+    const string black_path = textures_path + "black_wins.png";
+    const string draw_path = textures_path + "draw.png";
+    const string back_path = textures_path + "back.png";
+    const string replay_path = textures_path + "replay.png";
     // coordinates of chosen cell
     int active_x = -1, active_y = -1;
     // game result if exist
