@@ -1,4 +1,5 @@
 #pragma once
+#include <random>
 #include <vector>
 
 #include "../Models/Move.h"
@@ -12,26 +13,10 @@ class Logic
   public:
     Logic(Board *board, Config *config) : board(board), config(config)
     {
-        if (!((*config)("Bot", "NoRandom")))
-        {
-            srand(time(0));
-        }
-        else
-        {
-            srand(0);
-        }
+        rand_eng = std::default_random_engine (
+            !((*config)("Bot", "NoRandom")) ? unsigned(time(0)) : 0);
         scoring_mode = (*config)("Bot", "BotScoringType");
         optimization = (*config)("Bot", "Optimization");
-    }
-
-    void find_turns(const bool color)
-    {
-        find_turns(color, board->get_board());
-    }
-
-    void find_turns(const POS_T x, const POS_T y)
-    {
-        find_turns(x, y, board->get_board());
     }
 
     vector<move_pos> find_best_turns(const bool color)
@@ -51,7 +36,7 @@ class Logic
         return res;
     }
 
-  private:
+private:
     vector<vector<POS_T>> make_turn(vector<vector<POS_T>> mtx, move_pos turn) const
     {
         if (turn.xb != -1)
@@ -133,20 +118,10 @@ class Logic
             if (score > best_score)
             {
                 best_score = score;
-                best_states.clear();
-                best_moves.clear();
-            }
-            if (score == best_score)
-            {
-                best_states.push_back(have_beats_now ? next_state : -1);
-                best_moves.push_back(turn);
+                next_best_state[state] = (have_beats_now ? int(next_state) : -1);
+                next_move[state] = turn;
             }
         }
-
-        size_t idx = rand() % best_moves.size();
-        next_best_state[state] = best_states[idx];
-        next_move[state] = best_moves[idx];
-
         return best_score;
     }
 
@@ -194,14 +169,24 @@ class Logic
                 alpha = max(alpha, max_score);
             else
                 beta = min(beta, min_score);
-            if (optimization == "O2" && alpha == beta)
+            if (optimization != "O0" && alpha >= beta)
                 return (depth % 2 ? max_score + 1 : min_score - 1);
-            if (optimization != "O0" && alpha > beta)
-                break;
         }
         return (depth % 2 ? max_score : min_score);
     }
 
+public:
+    void find_turns(const bool color)
+    {
+        find_turns(color, board->get_board());
+    }
+
+    void find_turns(const POS_T x, const POS_T y)
+    {
+        find_turns(x, y, board->get_board());
+    }
+
+private:
     void find_turns(const bool color, const vector<vector<POS_T>> &mtx)
     {
         vector<move_pos> res_turns;
@@ -226,6 +211,7 @@ class Logic
             }
         }
         turns = res_turns;
+        shuffle(turns.begin(), turns.end(), rand_eng);
         have_beats = have_beats_before;
     }
 
@@ -325,6 +311,7 @@ class Logic
     int Max_depth;
 
   private:
+    default_random_engine rand_eng;
     string scoring_mode;
     string optimization;
     vector<move_pos> next_move;

@@ -9,9 +9,9 @@
         "WhiteBotLevel": 0,
         "BlackBotLevel": 5,
         "BotScoringType": "NumberAndPotential",
-        "BotDelayMS": 1000,
+        "BotDelayMS": 0,
         "NoRandom": false,
-        "Optimization": "O2"
+        "Optimization": "O1"
     },
     "Game": {
         "MaxNumTurns": 120

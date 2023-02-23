@@ -4,15 +4,14 @@
 #include <vector>
 
 #include "../Models/Move.h"
+#include "../Models/Project_path.h"
 
 #ifdef __APPLE__
     #include <SDL2/SDL.h>
     #include <SDL2/SDL_image.h>
-    #define  textures_path string("../../../cpp_lesson/Textures/")
 #else
     #include <SDL.h>
     #include <SDL_image.h>
-    #define  textures_path string("Textures/")
 #endif
 
 using namespace std;
@@ -45,7 +44,6 @@ public:
             W -= W / 15;
             H = W;
         }
-        print_exception(to_string(W) + to_string(H));
         win = SDL_CreateWindow("Checkers", 0, H / 30, W, H, SDL_WINDOW_RESIZABLE);
         if (win == nullptr)
         {
@@ -330,7 +328,7 @@ private:
     }
 
     void print_exception(const string& text) {
-        ofstream fout("log.txt", ios_base::app);
+        ofstream fout(project_path + "log.txt", ios_base::app);
         fout << "Error: " << text << ". "<< SDL_GetError() << endl;
         fout.close();
     }
@@ -353,6 +351,7 @@ private:
     SDL_Texture *back = nullptr;
     SDL_Texture *replay = nullptr;
     // texture files names
+    const string textures_path = project_path + "Textures/";
     const string board_path = textures_path + "board.png";
     const string piece_white_path = textures_path + "piece_white.png";
     const string piece_black_path = textures_path + "piece_black.png";

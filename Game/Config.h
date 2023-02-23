@@ -3,11 +3,7 @@
 #include <nlohmann/json.hpp>
 using json = nlohmann::json;
 
-#ifdef __APPLE__
-    #define  settings_path string("../../../cpp_lesson/settings.json")
-#else
-    #define  settings_path string("settings.json")
-#endif
+#include "../Models/Project_path.h"
 
 class Config
 {
@@ -19,7 +15,7 @@ class Config
 
     void reload()
     {
-        std::ifstream fin(settings_path);
+        std::ifstream fin(project_path + "settings.json");
         fin >> config;
         fin.close();
     }

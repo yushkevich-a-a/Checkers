@@ -2,6 +2,7 @@
 #include <chrono>
 #include <thread>
 
+#include "../Models/Project_path.h"
 #include "Board.h"
 #include "Config.h"
 #include "Hand.h"
@@ -12,7 +13,7 @@ class Game
   public:
     Game() : board(config("WindowSize", "Width"), config("WindowSize", "Hight")), hand(&board), logic(&board, &config)
     {
-        ofstream fout("log.txt", ios_base::trunc);
+        ofstream fout(project_path + "log.txt", ios_base::trunc);
         fout.close();
     }
 
@@ -75,7 +76,7 @@ class Game
                 bot_turn(turn_num % 2);
         }
         auto end = chrono::steady_clock::now();
-        ofstream fout("log.txt", ios_base::app);
+        ofstream fout(project_path + "log.txt", ios_base::app);
         fout << "Game time: " << (int)chrono::duration<double, milli>(end - start).count() << " millisec\n";
         fout.close();
 
@@ -126,7 +127,7 @@ class Game
         }
 
         auto end = chrono::steady_clock::now();
-        ofstream fout("log.txt", ios_base::app);
+        ofstream fout(project_path + "log.txt", ios_base::app);
         fout << "Bot turn time: " << (int)chrono::duration<double, milli>(end - start).count() << " millisec\n";
         fout.close();
     }
