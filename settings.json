@@ -11,7 +11,7 @@
         "BotScoringType": "NumberAndPotential",
         "BotDelayMS": 1000,
         "NoRandom": false,
-        "Optimization": "O2"
+        "Optimization": "O1"
     },
     "Game": {
         "MaxNumTurns": 120
