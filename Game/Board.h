@@ -6,13 +6,13 @@
 #include "../Models/Move.h"
 #include "../Models/Project_path.h"
 
-#ifdef __APPLE__
-    #include <SDL2/SDL.h>
-    #include <SDL2/SDL_image.h>
-#else
-    #include <SDL.h>
-    #include <SDL_image.h>
-#endif
+// #ifdef __APPLE__ || __LINUX__
+#include <SDL2/SDL.h>
+#include <SDL2/SDL_image.h>
+// #else
+//     #include <SDL.h>
+//     #include <SDL_image.h>
+// #endif
 
 using namespace std;
 
@@ -351,7 +351,7 @@ private:
     SDL_Texture *back = nullptr;
     SDL_Texture *replay = nullptr;
     // texture files names
-    const string textures_path = project_path + "Textures/";
+    const string textures_path = project_path + "./../Textures/";
     const string board_path = textures_path + "board.png";
     const string piece_white_path = textures_path + "piece_white.png";
     const string piece_black_path = textures_path + "piece_black.png";
