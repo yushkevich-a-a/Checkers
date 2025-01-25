@@ -132,9 +132,11 @@ class Game
         fout.close();
     }
 
+    // функция вызывается с определением цвета игрока
     Response player_turn(const bool color)
     {
         // return 1 if quit
+        // опеределение всех возможных клеток для хода
         vector<pair<POS_T, POS_T>> cells;
         for (auto turn : logic.turns)
         {
@@ -144,9 +146,10 @@ class Game
         move_pos pos = {-1, -1, -1, -1};
         POS_T x = -1, y = -1;
         // trying to make first move
+        // цикл отвечающий за обработку кликов
         while (true)
         {
-            auto resp = hand.get_cell();
+            auto resp = hand.get_cell(); // ожидание клика пользователя
             if (get<0>(resp) != Response::CELL)
                 return get<0>(resp);
             pair<POS_T, POS_T> cell{get<1>(resp), get<2>(resp)};

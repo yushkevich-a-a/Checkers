@@ -6,13 +6,13 @@
 #include "../Models/Move.h"
 #include "../Models/Project_path.h"
 
-// #ifdef __APPLE__ || __LINUX__
-#include <SDL2/SDL.h>
-#include <SDL2/SDL_image.h>
-// #else
-//     #include <SDL.h>
-//     #include <SDL_image.h>
-// #endif
+#ifdef __APPLE__ || __LINUX__
+    #include <SDL2/SDL.h>
+    #include <SDL2/SDL_image.h>
+#else
+    #include <SDL.h>
+    #include <SDL_image.h>
+#endif
 
 using namespace std;
 

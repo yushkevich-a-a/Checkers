@@ -5,13 +5,16 @@
 #include "../Models/Response.h"
 #include "Board.h"
 
-// methods for hands
+// methods for hands класс навашивающий на поределенной фрагменты программы обработчики событий от пользователя
 class Hand
 {
   public:
+    // инициализация игрового поля
     Hand(Board *board) : board(board)
     {
     }
+
+    // функция обработчиков события пользователя при взаимодействии с игровым полем и возвращает соответствующий респонс по нажатию
     tuple<Response, POS_T, POS_T> get_cell() const
     {
         SDL_Event windowEvent;
@@ -24,9 +27,11 @@ class Hand
             {
                 switch (windowEvent.type)
                 {
+                // нажатие на кнопку окончания программы
                 case SDL_QUIT:
                     resp = Response::QUIT;
                     break;
+                // нажатия на кнопки игрового поля
                 case SDL_MOUSEBUTTONDOWN:
                     x = windowEvent.motion.x;
                     y = windowEvent.motion.y;
@@ -34,15 +39,15 @@ class Hand
                     yc = int(x / (board->W / 10) - 1);
                     if (xc == -1 && yc == -1 && board->history_mtx.size() > 1)
                     {
-                        resp = Response::BACK;
+                        resp = Response::BACK; // события шаг назад
                     }
                     else if (xc == -1 && yc == 8)
                     {
-                        resp = Response::REPLAY;
+                        resp = Response::REPLAY; // событие начать игру заново
                     }
                     else if (xc >= 0 && xc < 8 && yc >= 0 && yc < 8)
                     {
-                        resp = Response::CELL;
+                        resp = Response::CELL; // событи выбора клетки
                     }
                     else
                     {
@@ -50,6 +55,8 @@ class Hand
                         yc = -1;
                     }
                     break;
+
+                    // событие изменение шириниы экрана приложения
                 case SDL_WINDOWEVENT:
                     if (windowEvent.window.event == SDL_WINDOWEVENT_SIZE_CHANGED)
                     {
@@ -61,9 +68,11 @@ class Hand
                     break;
             }
         }
+        // если произошло нажатие то возврашается ответ. занчение события и координаты
         return {resp, xc, yc};
     }
 
+    // метод ожидания события при окончании игры
     Response wait() const
     {
         SDL_Event windowEvent;
