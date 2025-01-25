@@ -363,7 +363,7 @@ private:
     SDL_Texture *back = nullptr;
     SDL_Texture *replay = nullptr;
     // texture files names
-    const string textures_path = project_path + "./../Textures/";
+    const string textures_path = project_path + "Textures/";
     const string board_path = textures_path + "board.png";
     const string piece_white_path = textures_path + "piece_white.png";
     const string piece_black_path = textures_path + "piece_black.png";

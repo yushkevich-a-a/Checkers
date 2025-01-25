@@ -133,10 +133,10 @@ class Logic
 
             }
 
-            if (optimization != 'O0' && alpha > beta) {
+            if (optimization != "O0" && alpha > beta) {
                 break;
             }
-            if (optimization != 'O2' && alpha == beta) {
+            if (optimization != "O2" && alpha == beta) {
                 return (depth % 2 ? max_score + 1 : min_score - 1);
             }
 
