@@ -20,20 +20,7 @@ class Logic
     }
 
     vector<move_pos> find_best_turns(const bool color)
-    {
-        next_best_state.clear();
-        next_move.clear();
 
-        find_first_best_turn(board->get_board(), color, -1, -1, 0);
-
-        int cur_state = 0;
-        vector<move_pos> res;
-        do
-        {
-            res.push_back(next_move[cur_state]);
-            cur_state = next_best_state[cur_state];
-        } while (cur_state != -1 && next_move[cur_state].x != -1);
-        return res;
     }
 
 private:
@@ -176,11 +163,12 @@ private:
     }
 
 public:
+    // находит ход на доске относительно выбранного цвета за которым ход с последующей перегрузгой метода в приватный метод
     void find_turns(const bool color)
     {
         find_turns(color, board->get_board());
     }
-
+    // находит ход на доске относительно координат переданных перегрузгой метода в приватный метод
     void find_turns(const POS_T x, const POS_T y)
     {
         find_turns(x, y, board->get_board());
@@ -189,15 +177,17 @@ public:
 private:
     void find_turns(const bool color, const vector<vector<POS_T>> &mtx)
     {
+        // вектор доступных ходов
         vector<move_pos> res_turns;
-        bool have_beats_before = false;
+        bool have_beats_before = false; 
         for (POS_T i = 0; i < 8; ++i)
         {
             for (POS_T j = 0; j < 8; ++j)
             {
+                // находим поля в которых стоит выбранный цвет
                 if (mtx[i][j] && mtx[i][j] % 2 != color)
                 {
-                    find_turns(i, j, mtx);
+                    find_turns(i, j, mtx); // передача в функцию  поиска ходов уже непосредственно координат
                     if (have_beats && !have_beats_before)
                     {
                         have_beats_before = true;
@@ -214,18 +204,19 @@ private:
         shuffle(turns.begin(), turns.end(), rand_eng);
         have_beats = have_beats_before;
     }
-
+    // находит ход на доске относительно указанныхкоординат
     void find_turns(const POS_T x, const POS_T y, const vector<vector<POS_T>> &mtx)
     {
+        // очистка вектора от возможних подсчетов сделанных ранее
         turns.clear();
         have_beats = false;
         POS_T type = mtx[x][y];
-        // check beats
+        // check beats поиск побитий
         switch (type)
         {
         case 1:
         case 2:
-            // check pieces
+            // check pieces проверка наличия ходов у шашки
             for (POS_T i = x - 2; i <= x + 2; i += 4)
             {
                 for (POS_T j = y - 2; j <= y + 2; j += 4)
@@ -235,12 +226,13 @@ private:
                     POS_T xb = (x + i) / 2, yb = (y + j) / 2;
                     if (mtx[i][j] || !mtx[xb][yb] || mtx[xb][yb] % 2 == type % 2)
                         continue;
+                    // если ход доступен то помещаем в вектор
                     turns.emplace_back(x, y, i, j, xb, yb);
                 }
             }
             break;
         default:
-            // check queens
+            // check queens для дамки
             for (POS_T i = -1; i <= 1; i += 2)
             {
                 for (POS_T j = -1; j <= 1; j += 2)
@@ -259,6 +251,7 @@ private:
                         }
                         if (xb != -1 && xb != i2)
                         {
+                            // если ход доступен то помещаем в вектор
                             turns.emplace_back(x, y, i2, j2, xb, yb);
                         }
                     }
@@ -266,17 +259,19 @@ private:
             }
             break;
         }
-        // check other turns
+        // check other turns если есть возможные ходы то меняем флаг 
         if (!turns.empty())
         {
             have_beats = true;
             return;
         }
+
+        // просчет логики ходов
         switch (type)
         {
         case 1:
         case 2:
-            // check pieces
+           // check queens для шашки
             {
                 POS_T i = ((type % 2) ? x - 1 : x + 1);
                 for (POS_T j = y - 1; j <= y + 1; j += 2)
@@ -288,7 +283,7 @@ private:
                 break;
             }
         default:
-            // check queens
+            // check queens для дамки
             for (POS_T i = -1; i <= 1; i += 2)
             {
                 for (POS_T j = -1; j <= 1; j += 2)
@@ -306,16 +301,16 @@ private:
     }
 
   public:
-    vector<move_pos> turns;
-    bool have_beats;
-    int Max_depth;
+    vector<move_pos> turns; // вектор возможных ходов
+    bool have_beats; // флаг наличия ходов
+    int Max_depth; 
 
   private:
     default_random_engine rand_eng;
     string scoring_mode;
     string optimization;
-    vector<move_pos> next_move;
+    vector<move_pos> next_move; //
     vector<int> next_best_state;
-    Board *board;
-    Config *config;
+    Board *board; // класс игрового поля
+    Config *config; // текущий конфиг игры
 };
