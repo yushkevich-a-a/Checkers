@@ -31,7 +31,7 @@ class Logic
         do {
             res.push_back(next_move[state]);
             state = next_best_state[state];
-        } while (state == -1 && next_move[state].x == -1);
+        } while (state != -1 && next_move[state].x != -1);
 
         return res;
      }
@@ -42,7 +42,7 @@ class Logic
         next_move.emplace_back( -1, -1, -1, -1);
         next_best_state.push_back(-1);
 
-        if (state =! 0) {
+        if (state != 0) {
             find_turns( x, y, mtx);
         }
 
@@ -56,7 +56,7 @@ class Logic
 
         double best_score = -1;
         
-        for (auto turn: turns) {
+        for (auto turn: this_turns) {
 
             size_t new_state = next_move.size();
             double score;
@@ -112,14 +112,18 @@ class Logic
         for (auto turn: now_turns) {
 
 
-            double score = -1;
+            double score = 0.0;
 
-            if (now_have_beats) {
-                score = find_best_turns_rec(make_turn(mtx, turn), color, depth, alpha, beta, turn.x2, turn.y2);
+            if (!now_have_beats && x == -1)
+            {
+                score = find_best_turns_rec(make_turn(mtx, turn), 1 - color, depth + 1, alpha, beta);
             } else {
-                score = find_best_turns_rec(make_turn(mtx, turn), 1 - color, depth + 1 , alpha, beta, turn.x2, turn.y2);
-
+                score = find_best_turns_rec(make_turn(mtx, turn), color, depth, alpha, beta, turn.x2, turn.y2);
             }
+
+
+
+
 
             min_score = min(min_score, score);
             max_score = max(max_score, score);
@@ -145,40 +149,6 @@ class Logic
         return (depth % 2 ? max_score : min_score);
 
     }
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
 
 private:
     // функция пересчета матрицы в зависимости от хода 
