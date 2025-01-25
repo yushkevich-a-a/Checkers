@@ -5,10 +5,11 @@ typedef int8_t POS_T;
 
 struct move_pos
 {
-    POS_T x, y;             // from
-    POS_T x2, y2;           // to
-    POS_T xb = -1, yb = -1; // beaten
-
+    POS_T x, y;             // from клетка откуда идет шашка
+    POS_T x2, y2;           // to клетка куда идет шашка
+    POS_T xb = -1, yb = -1; // beaten занчение побитого поля
+ 
+    // перегруженные конструкторы структуры
     move_pos(const POS_T x, const POS_T y, const POS_T x2, const POS_T y2) : x(x), y(y), x2(x2), y2(y2)
     {
     }

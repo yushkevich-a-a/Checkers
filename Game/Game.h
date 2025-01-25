@@ -10,7 +10,7 @@
 
 class Game
 {
-  public:
+public:
     Game() : board(config("WindowSize", "Width"), config("WindowSize", "Hight")), hand(&board), logic(&board, &config)
     {
         ofstream fout(project_path + "log.txt", ios_base::trunc);
@@ -103,7 +103,8 @@ class Game
         return res;
     }
 
-  private:
+private:
+    // функция хода бота
     void bot_turn(const bool color)
     {
         auto start = chrono::steady_clock::now();
@@ -111,10 +112,13 @@ class Game
         auto delay_ms = config("Bot", "BotDelayMS");
         // new thread for equal delay for each turn
         thread th(SDL_Delay, delay_ms);
+        // находим лучший ход для бота в зависимости от цвета кода
         auto turns = logic.find_best_turns(color);
+        // объединение потока
         th.join();
         bool is_first = true;
         // making moves
+        // выполняем ход и передвигаем фигуры
         for (auto turn : turns)
         {
             if (!is_first)
@@ -127,34 +131,40 @@ class Game
         }
 
         auto end = chrono::steady_clock::now();
-        ofstream fout(project_path + "log.txt", ios_base::app);
+        ofstream fout(project_path + "log.txt", ios_base::app); // логгирование
+        // продсчет времени хода бота для отображения в логах
         fout << "Bot turn time: " << (int)chrono::duration<double, milli>(end - start).count() << " millisec\n";
         fout.close();
+        fout << "Bot turn time: " << (int)chrono::duration<doub
     }
 
-    // функция вызывается с определением цвета игрока
+    // функция хода игрока
     Response player_turn(const bool color)
     {
         // return 1 if quit
-        // опеределение всех возможных клеток для хода
+        // вектор возможных ходов игрока
         vector<pair<POS_T, POS_T>> cells;
         for (auto turn : logic.turns)
         {
             cells.emplace_back(turn.x, turn.y);
         }
+        // отрисовка возможных ходов
         board.highlight_cells(cells);
         move_pos pos = {-1, -1, -1, -1};
         POS_T x = -1, y = -1;
         // trying to make first move
-        // цикл отвечающий за обработку кликов
+        // цикл отвечающий за обработку первого хода игрока
         while (true)
         {
+
             auto resp = hand.get_cell(); // ожидание клика пользователя
+            // валидация события нажатия пользователя
             if (get<0>(resp) != Response::CELL)
                 return get<0>(resp);
             pair<POS_T, POS_T> cell{get<1>(resp), get<2>(resp)};
 
             bool is_correct = false;
+            
             for (auto turn : logic.turns)
             {
                 if (turn.x == cell.first && turn.y == cell.second)
@@ -168,23 +178,33 @@ class Game
                     break;
                 }
             }
+            // если сделан ход и начальная позиция поменялась то прерываем цикла первого хода
+
             if (pos.x != -1)
                 break;
+            // при клике на поля где нет подсветки происходит сброс выбранной шашки и итерация цикла начинается сначала
             if (!is_correct)
             {
+                // если событи выбора сделано 
                 if (x != -1)
                 {
                     board.clear_active();
-                    board.clear_highlight();
+                    board.clear_highlight(); 
                     board.highlight_cells(cells);
                 }
                 x = -1;
                 y = -1;
                 continue;
             }
+            
+            //присваиваем координаты для выбранной пешки для перерасчета возможных ходовч
             x = cell.first;
             y = cell.second;
-            board.clear_highlight();
+
+            // сбрасываем подсветку
+            board.clear_highlight(); 
+
+            // прдсвечиваем выбранную пешку
             board.set_active(x, y);
             vector<pair<POS_T, POS_T>> cells2;
             for (auto turn : logic.turns)
@@ -194,18 +214,23 @@ class Game
                     cells2.emplace_back(turn.x2, turn.y2);
                 }
             }
-            board.highlight_cells(cells2);
+            board.highlight_cells(cells2); // подсветка возможных ходов после выбора клетки
         }
         board.clear_highlight();
         board.clear_active();
+        // перемешение шашки
         board.move_piece(pos, pos.xb != -1);
+
+        // проверка если ли побитая шашка и может ли сделать еще ход
         if (pos.xb == -1)
-            return Response::OK;
+            return Response::OK; // если нет побитых шашек то заканчиваем ход игрока
         // continue beating while can
         beat_series = 1;
+        // выбор второго хода если была побита пешка
         while (true)
         {
             logic.find_turns(pos.x2, pos.y2);
+            // если нет ходов то прервывается цикл
             if (!logic.have_beats)
                 break;
 
@@ -214,12 +239,16 @@ class Game
             {
                 cells.emplace_back(turn.x2, turn.y2);
             }
+            // подсветка возможных ходов
             board.highlight_cells(cells);
-            board.set_active(pos.x2, pos.y2);
+            board.set_active(pos.x2, pos.y2); // подсветка активной шашки
             // trying to make move
+            
             while (true)
             {
+                // ожидание второго хода пользователя
                 auto resp = hand.get_cell();
+                // проверка что клик по клетке
                 if (get<0>(resp) != Response::CELL)
                     return get<0>(resp);
                 pair<POS_T, POS_T> cell{get<1>(resp), get<2>(resp)};
@@ -234,12 +263,15 @@ class Game
                         break;
                     }
                 }
+                // теперь если выбор поля некорректен то будем ожидать повтороного ввода события
                 if (!is_correct)
                     continue;
 
+                // сброс подсветок и активных полей
                 board.clear_highlight();
                 board.clear_active();
-                beat_series += 1;
+                beat_series += 1; // добавление к съеденным шашкам
+                // перемешение шашки
                 board.move_piece(pos, beat_series);
                 break;
             }
@@ -248,7 +280,7 @@ class Game
         return Response::OK;
     }
 
-  private:
+private:
     Config config;
     Board board;
     Hand hand;
