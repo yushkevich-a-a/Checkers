@@ -75,7 +75,7 @@ public:
         return 0;
     }
 
-
+    // перерисовка игры
     void redraw()
     {
         game_results = -1;
@@ -85,7 +85,7 @@ public:
         clear_active();
         clear_highlight();
     }
-
+    // передвижение фигуры
     void move_piece(move_pos turn, const int beat_series = 0)
     {
         if (turn.xb != -1)
@@ -111,13 +111,14 @@ public:
         drop_piece(i, j);
         add_history(beat_series);
     }
-
+    // исключение фигуры с поля
     void drop_piece(const POS_T i, const POS_T j)
     {
         mtx[i][j] = 0;
         rerender();
     }
 
+    // изменение типа фигуры 
     void turn_into_queen(const POS_T i, const POS_T j)
     {
         if (mtx[i][j] == 0 || mtx[i][j] > 2)
@@ -132,6 +133,7 @@ public:
         return mtx;
     }
 
+    // подсветка клеток
     void highlight_cells(vector<pair<POS_T, POS_T>> cells)
     {
         for (auto pos : cells)
@@ -141,7 +143,7 @@ public:
         }
         rerender();
     }
-
+    // очистка подсветки клеток
     void clear_highlight()
     {
         for (POS_T i = 0; i < 8; ++i)
@@ -151,6 +153,7 @@ public:
         rerender();
     }
 
+    // выбор активной фигуры
     void set_active(const POS_T x, const POS_T y)
     {
         active_x = x;
@@ -158,18 +161,21 @@ public:
         rerender();
     }
 
+    // очистка активной фигуры
     void clear_active()
     {
         active_x = -1;
         active_y = -1;
         rerender();
     }
-
+    
+    // проверка подсвечена ли клетка
     bool is_highlighted(const POS_T x, const POS_T y)
     {
         return is_highlighted_[x][y];
     }
 
+    // ход назад
     void rollback()
     {
         auto beat_series = max(1, *(history_beat_series.rbegin()));
@@ -183,19 +189,21 @@ public:
         clear_active();
     }
 
+    // показать окно по окончании игры
     void show_final(const int res)
     {
         game_results = res;
         rerender();
     }
 
-    // use if window size changed
+    // сброс размера окна
     void reset_window_size()
     {
         SDL_GetRendererOutputSize(ren, &W, &H);
         rerender();
     }
 
+    // уничтожение фигур при закрытии приложения
     void quit()
     {
         SDL_DestroyTexture(board);
@@ -217,12 +225,13 @@ public:
     }
 
 private:
+    // добавление истории
     void add_history(const int beat_series = 0)
     {
         history_mtx.push_back(mtx);
         history_beat_series.push_back(beat_series);
     }
-    // function to make start matrix
+    // создание начальной матрицы
     void make_start_mtx()
     {
         for (POS_T i = 0; i < 8; ++i)
@@ -329,7 +338,7 @@ private:
         SDL_Event windowEvent;
         SDL_PollEvent(&windowEvent);
     }
-
+    // вывести ошибки в лог
     void print_exception(const string& text) {
         ofstream fout(project_path + "log.txt", ios_base::app);
         fout << "Error: " << text << ". "<< SDL_GetError() << endl;
