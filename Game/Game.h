@@ -135,12 +135,10 @@ private:
         // продсчет времени хода бота для отображения в логах
         fout << "Bot turn time: " << (int)chrono::duration<double, milli>(end - start).count() << " millisec\n";
         fout.close();
-        fout << "Bot turn time: " << (int)chrono::duration<doub
     }
 
     // функция хода игрока
-    Response player_turn(const bool color)
-    {
+    Response player_turn(const bool color) {
         // return 1 if quit
         // вектор возможных ходов игрока
         vector<pair<POS_T, POS_T>> cells;

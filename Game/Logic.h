@@ -24,7 +24,7 @@ class Logic
         next_move.clear();
         next_best_state.clear();
 
-        find_best_turns(board->get_board(), color, -1, -1, 0);
+        find_first_best_turn(board->get_board(), color, -1, -1, 0);
 
         vector<move_pos> res;
         int state = 0;
@@ -51,7 +51,7 @@ class Logic
 
         if (!now_have_beats && state != 0)
         {
-            return find_best_turns_rec(mtx, 1 - color, 0, alpha )
+            return find_best_turns_rec(mtx, 1 - color, 0, alpha);
         }
 
         double best_score = -1;
@@ -85,7 +85,7 @@ class Logic
         if (x != -1) {
             find_turns(x, y, mtx);
         } else {
-            find_turns(color, mtx)
+            find_turns(color, mtx);
         }
 
         auto now_turns = turns;
@@ -93,7 +93,7 @@ class Logic
 
         if (!now_have_beats && x != -1)
         {
-            return find_best_turns_rec(mtx, 1 - color, depth + 1, alpha, beta )
+            return find_best_turns_rec(mtx, 1 - color, depth + 1, alpha, beta);
         }
 
         if (turns.empty())
@@ -126,7 +126,7 @@ class Logic
             //alpha
             //beta
         }
-        return (depth % 2 ? max_score : min_score)
+        return (depth % 2 ? max_score : min_score);
 
     }
 
@@ -324,7 +324,7 @@ private:
     int Max_depth;  // максимальная глубина просчета ходов, берется из файла конфиг
 
   private:
-    
+     default_random_engine rand_eng;
     string scoring_mode; 
     string optimization; // оптимизация просчетов ходов
     vector<move_pos> next_move; // вектор ходов
